@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <script src="https://code.angularjs.org/snapshot/angular.min.js"></script>
+
+</head>
+
+<body ng-app="app">
+    <div ng-controller="app-ctrl" class="container">
+        <form name="myForm">
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <h3 class="text-primary">Coloumn List</h3>
+                    <div class="border border-info"></div>
+                    <div class="mt-3">
+                        <select class="mt-3 browser-default custom-select" multiple ng-model="headers" id="preHeaders">
+                            <option ng-repeat="x in preHeaders">{{x}}</option>
+                        </select>
+                        {{headers}}
+                    </div>
+                </div>
+                <div class="col-md-4 mt-5">
+                    <button ng-click="add()" class="btn-block btn-info">Add</button>
+                    <button ng-click="remove()" class="btn-block btn-info">Remove</button>
+                </div>
+                <div class="col-md-4">
+                    <h3 class="text-primary">Selected Coloumn List</h3>
+                    <div class="border border-info"></div>
+                    <div class="mt-3">
+                        <select class="mt-3 browser-default custom-select" multiple ng-model="headers"
+                            id="selectedHeaders">
+                            <option ng-repeat="x in selectedHeaders">{{x}}</option>
+                        </select>
+                        {{headers}}
+                    </div>
+
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col text-center">
+                    <button class="btn btn-primary w-25" ng-click="pullData()">Generate Data Layout</button>
+                </div>
+            </div>
+            <!-- <div ng-include="'http://localhost:2000/load_data'"></div> -->
+            <div ng-include="template_url"></div>
+
+        </form>
+    </div>
+</body>
+
+</html>
+
+<script>
+    var app = angular.module('app', []);
+    app.controller('app-ctrl', function ($scope, $http) {
+
+        $scope.headers = [];
+        $scope.rheaders = [];
+        $scope.selectedHeaders = [];
+
+        $http({
+            method: 'GET',
+            url: 'http://localhost:2000/displayHeaders'
+        }).then(function successCallback(response) {
+            $scope.preHeaders = response.data;
+        }, function errorCallback(response) {
+            console.log("error while calling api")
+        });
+
+
+        $scope.add = function () {
+
+            $scope.headers.forEach(element => {         //elements present in headers after selection 
+                $scope.selectedHeaders.push(element);   //add elements from headers to selectedHeaders 
+                const index = $scope.preHeaders.indexOf(element); // check the index of element from preheaders (selected item index) 
+                if (index > -1) {                      //check if index of elements is present in preheaders or less than -1 
+                    $scope.preHeaders.splice(index, 1); // delete the element from preheaders
+                }
+            });
+
+            // $scope.headers = [];                         //after adding the elements headers should be empty.
+        }
+
+        $scope.remove = function () {
+
+            $scope.headers.forEach(element => {
+                $scope.preHeaders.push(element);
+                const index = $scope.selectedHeaders.indexOf(element);
+                if (index > -1) {
+                    $scope.selectedHeaders.splice(index, 1);
+                }
+
+            });
+
+            // $scope.headers = [];                        // empty because so that can remove it;
+        }
+         
+        $http({
+            method: 'GET',
+            url: 'http://localhost:2000/displayStates'      //display states 
+        }).then(function successCallback(response) {
+            $scope.selectStates = response.data;
+        }, function errorCallback(response) {
+            console.log("error while calling api")
+        });
+
+
+        $scope.pullData = function (states = false) {
+
+            url = "http://localhost:2000/displayData?selectedHeaders=state,";
+
+            dh = $scope.selectedHeaders.join(',');   //converts selectedHeaders array into string to pass query string
+
+            if (states) {
+                st = $scope.states_model.join(','); 
+            } else {
+                st = "";
+            }
+
+            url = url + dh + "&states=" + st;
+
+            $http({
+                method: 'GET',
+                url: url
+            }).then(function successCallback(response) {
+                $scope.template_url = "http://localhost:2000/load_data";
+                $scope.tableData = response.data;
+            }, function errorCallback(response) {
+                console.log("error while calling api")
+            });
+        }
+       
+        $scope.statesFilter = function () {
+            $scope.pullData(true);
+        }
+
+    });
+</script>
