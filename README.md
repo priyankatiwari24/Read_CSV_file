@@ -1,8 +1,8 @@
 # Steps to run codebase
 
 ## Step 1: Clone Codebase
-```git clone https://github.com/priyankatiwari24/Read_CSV_file.git```
-```cd cd Read_CSV_file/```
+```git clone https://github.com/priyankatiwari24/Read_CSV_file.git``` 
+```cd Read_CSV_file/```
 
 ## Step 2: Install Dependency
 ```npm i express csv-parser```
