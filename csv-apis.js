@@ -29,7 +29,7 @@ app.get('/displayHeaders', function (req, res) {
 app.get('/displayStates', function (req, res) {
 
     var states = [];
-
+    
     fs.createReadStream(path_csv)
         .on('error', () => {
             console.log("error while reading the csv file ...")
@@ -61,6 +61,12 @@ app.get('/displayData', function (req, res) {
         sstates = states.split(',')
     }
 
+    let page = req.query.page;
+    let limit = req.query.limit;
+
+    let startIndex = (page - 1) * limit;
+    let endIndex = page * limit;
+
     let data = [];
 
     fs.createReadStream(path_csv)
@@ -90,7 +96,8 @@ app.get('/displayData', function (req, res) {
         })
 
         .on('end', () => {
-            res.send(data)
+            let result = data.slice(startIndex,endIndex)    //select elements from this indexes exclude last index.
+            res.send(result);
         })
 
 })
